@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(npm install next@latest react@latest react-dom@latest)",
+      "Bash(npm install -D typescript @types/react @types/node @types/react-dom tailwindcss @tailwindcss/postcss postcss autoprefixer eslint)",
+      "Bash(npm install framer-motion lucide-react zustand)",
+      "Bash(npm run build)",
+      "Bash(timeout 15 npm run dev)",
+      "Bash(npm install @anthropic-ai/sdk @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities)",
+      "Bash(gh auth status)"
+    ]
+  }
+}
