@@ -1,69 +1,68 @@
 @import "tailwindcss";
 
-/* ── Light theme tokens ─────────────────────────────── */
+/* ── Runtime theme properties (toggled by .dark on <html>) ── */
+/* These use --t- prefix to avoid colliding with Tailwind's --color- namespace */
 :root {
-  --color-background: #FAF9F6;
-  --color-foreground: #1F2937;
-  --color-primary: #4338CA;
-  --color-primary-light: #6366F1;
-  --color-primary-dark: #3730A3;
-  --color-secondary: #6B7280;
-  --color-accent: #FED7AA;
-  --color-accent-dark: #FDBA74;
-  --color-surface: #FFFFFF;
-  --color-surface-hover: #F9FAFB;
-  --color-border: #E5E7EB;
-  --color-border-light: #F3F4F6;
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-  --font-heading: 'General Sans', system-ui, sans-serif;
-  --font-body: 'Libre Franklin', system-ui, sans-serif;
+  --t-background:    #FAF9F6;
+  --t-foreground:    #1F2937;
+  --t-primary:       #4338CA;
+  --t-primary-light: #6366F1;
+  --t-primary-dark:  #3730A3;
+  --t-secondary:     #6B7280;
+  --t-accent:        #FED7AA;
+  --t-accent-dark:   #FDBA74;
+  --t-surface:       #FFFFFF;
+  --t-surface-hover: #F9FAFB;
+  --t-border:        #E5E7EB;
+  --t-border-light:  #F3F4F6;
+  --t-success:       #10B981;
+  --t-warning:       #F59E0B;
+  --t-error:         #EF4444;
 }
 
-/* ── Dark theme tokens ───────────────────────────────── */
 .dark {
-  --color-background: #0F0F13;
-  --color-foreground: #F0EFEC;
-  --color-primary: #6366F1;
-  --color-primary-light: #818CF8;
-  --color-primary-dark: #4F46E5;
-  --color-secondary: #9CA3AF;
-  --color-accent: #92400E;
-  --color-accent-dark: #78350F;
-  --color-surface: #18181F;
-  --color-surface-hover: #21212C;
-  --color-border: #2D2D3A;
-  --color-border-light: #23232E;
-  --color-success: #34D399;
-  --color-warning: #FCD34D;
-  --color-error: #F87171;
+  --t-background:    #0F0F13;
+  --t-foreground:    #F0EFEC;
+  --t-primary:       #6366F1;
+  --t-primary-light: #818CF8;
+  --t-primary-dark:  #4F46E5;
+  --t-secondary:     #9CA3AF;
+  --t-accent:        #92400E;
+  --t-accent-dark:   #78350F;
+  --t-surface:       #18181F;
+  --t-surface-hover: #21212C;
+  --t-border:        #2D2D3A;
+  --t-border-light:  #23232E;
+  --t-success:       #34D399;
+  --t-warning:       #FCD34D;
+  --t-error:         #F87171;
 }
 
+/* ── Tailwind tokens — reference --t- vars so utilities respond to .dark ── */
 @theme inline {
-  --color-background: var(--color-background);
-  --color-foreground: var(--color-foreground);
-  --color-primary: var(--color-primary);
-  --color-primary-light: var(--color-primary-light);
-  --color-primary-dark: var(--color-primary-dark);
-  --color-secondary: var(--color-secondary);
-  --color-accent: var(--color-accent);
-  --color-accent-dark: var(--color-accent-dark);
-  --color-surface: var(--color-surface);
-  --color-surface-hover: var(--color-surface-hover);
-  --color-border: var(--color-border);
-  --color-border-light: var(--color-border-light);
-  --color-success: var(--color-success);
-  --color-warning: var(--color-warning);
-  --color-error: var(--color-error);
-  --font-heading: var(--font-heading);
-  --font-body: var(--font-body);
+  --color-background:    var(--t-background);
+  --color-foreground:    var(--t-foreground);
+  --color-primary:       var(--t-primary);
+  --color-primary-light: var(--t-primary-light);
+  --color-primary-dark:  var(--t-primary-dark);
+  --color-secondary:     var(--t-secondary);
+  --color-accent:        var(--t-accent);
+  --color-accent-dark:   var(--t-accent-dark);
+  --color-surface:       var(--t-surface);
+  --color-surface-hover: var(--t-surface-hover);
+  --color-border:        var(--t-border);
+  --color-border-light:  var(--t-border-light);
+  --color-success:       var(--t-success);
+  --color-warning:       var(--t-warning);
+  --color-error:         var(--t-error);
+  --font-heading: 'General Sans', system-ui, sans-serif;
+  --font-body:    'Libre Franklin', system-ui, sans-serif;
 }
 
 @layer base {
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: var(--t-background);
+    color: var(--t-foreground);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -82,8 +81,8 @@
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-secondary); }
+::-webkit-scrollbar-thumb { background: var(--t-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--t-secondary); }
 
 /* Waveform bar animation */
 @keyframes waveBar {
