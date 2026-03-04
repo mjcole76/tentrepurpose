@@ -14,6 +14,7 @@ export interface SourceContent {
   type: ContentType;
   url?: string;
   fileName?: string;
+  textContent?: string;
   thumbnail?: string;
   duration?: string;
   createdAt: string;

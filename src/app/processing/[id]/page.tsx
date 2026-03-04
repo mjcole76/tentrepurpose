@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,7 +12,8 @@ import {
   Check,
   Loader2,
 } from "lucide-react";
-import { useContentStore, completeProcessing } from "@/lib/store";
+import { useContentStore } from "@/lib/store";
+import { RepurposedAsset } from "@/lib/types";
 
 const processingSteps = [
   {
@@ -59,12 +60,41 @@ export default function ProcessingPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { updateSource } = useContentStore();
+  const { updateSource, getSourceById } = useContentStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [stepProgress, setStepProgress] = useState(0);
+  const [waitingForAI, setWaitingForAI] = useState(false);
+
+  const apiResultRef = useRef<RepurposedAsset[] | null>(null);
+  const apiDoneRef = useRef(false);
 
   useEffect(() => {
     let isCancelled = false;
+
+    // Fire real AI processing immediately
+    const source = getSourceById(id);
+    fetch("/api/process", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sourceId: id,
+        url: source?.url,
+        type: source?.type ?? "text",
+        textContent: source?.textContent,
+        title: source?.title,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (!isCancelled && data.assets) {
+          apiResultRef.current = data.assets;
+        }
+        apiDoneRef.current = true;
+      })
+      .catch((err) => {
+        console.error("Process API error:", err);
+        apiDoneRef.current = true;
+      });
 
     const runSteps = async () => {
       for (let i = 0; i < processingSteps.length; i++) {
@@ -83,9 +113,21 @@ export default function ProcessingPage({
         }
       }
 
+      if (isCancelled) return;
+
+      // Animation done — wait for AI if still processing
+      if (!apiDoneRef.current) {
+        setWaitingForAI(true);
+        while (!apiDoneRef.current) {
+          if (isCancelled) return;
+          await new Promise((r) => setTimeout(r, 300));
+        }
+        setWaitingForAI(false);
+      }
+
       if (!isCancelled) {
-        // Complete processing
-        const assets = completeProcessing(id);
+        const { generateMockAssets } = await import("@/lib/mock-data");
+        const assets = apiResultRef.current ?? generateMockAssets(id);
         updateSource(id, { status: "completed", assets });
         await new Promise((r) => setTimeout(r, 500));
         router.push(`/results/${id}`);
@@ -97,7 +139,7 @@ export default function ProcessingPage({
     return () => {
       isCancelled = true;
     };
-  }, [id, router, updateSource]);
+  }, [id, router, updateSource, getSourceById]);
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4">
@@ -127,9 +169,9 @@ export default function ProcessingPage({
         <div className="space-y-3">
           {processingSteps.map((step, i) => {
             const Icon = step.icon;
-            const isActive = i === currentStep;
-            const isCompleted = i < currentStep;
-            const isPending = i > currentStep;
+            const isActive = i === currentStep && !waitingForAI;
+            const isCompleted = i < currentStep || waitingForAI;
+            const isPending = i > currentStep && !waitingForAI;
 
             return (
               <motion.div
@@ -160,11 +202,7 @@ export default function ProcessingPage({
                         key="check"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 300,
-                          damping: 20,
-                        }}
+                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       >
                         <Check className="w-5 h-5 text-success" />
                       </motion.div>
@@ -172,11 +210,7 @@ export default function ProcessingPage({
                       <motion.div
                         key="loading"
                         animate={{ rotate: 360 }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 1,
-                          ease: "linear",
-                        }}
+                        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                       >
                         <Loader2 className="w-5 h-5 text-primary" />
                       </motion.div>
@@ -232,15 +266,31 @@ export default function ProcessingPage({
           })}
         </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-sm text-secondary mt-8"
-        >
-          Step {Math.min(currentStep + 1, processingSteps.length)} of{" "}
-          {processingSteps.length}
-        </motion.p>
+        <AnimatePresence>
+          {waitingForAI && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="mt-5 flex items-center justify-center gap-2 text-sm text-secondary"
+            >
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              Finalizing AI-generated content…
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!waitingForAI && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-center text-sm text-secondary mt-8"
+          >
+            Step {Math.min(currentStep + 1, processingSteps.length)} of{" "}
+            {processingSteps.length}
+          </motion.p>
+        )}
       </div>
     </div>
   );

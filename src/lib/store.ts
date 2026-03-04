@@ -65,7 +65,8 @@ export function createNewSource(
   title: string,
   type: SourceContent["type"],
   url?: string,
-  fileName?: string
+  fileName?: string,
+  textContent?: string
 ): SourceContent {
   const id = `src-${Date.now()}`;
   return {
@@ -74,6 +75,7 @@ export function createNewSource(
     type,
     url,
     fileName,
+    textContent,
     createdAt: new Date().toISOString(),
     status: "processing",
     assets: [],

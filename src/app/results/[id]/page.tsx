@@ -59,6 +59,18 @@ export default function ResultsPage({
     })).filter((t) => t.count > 0),
   ];
 
+  const downloadFile = (content: string, filename: string) => {
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleCopy = async (asset: RepurposedAsset) => {
     await navigator.clipboard.writeText(asset.content);
     setCopiedId(asset.id);
@@ -66,8 +78,31 @@ export default function ResultsPage({
   };
 
   const handleExport = (asset: RepurposedAsset) => {
+    const safeName = asset.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+    const ext = asset.platform === "newsletter" ? ".md" : ".txt";
+    downloadFile(asset.content, `${safeName}${ext}`);
     setExportedId(asset.id);
     setTimeout(() => setExportedId(null), 3000);
+  };
+
+  const handleExportAll = () => {
+    const combined = assets
+      .map((asset) =>
+        [
+          "=".repeat(60),
+          `${getPlatformName(asset.platform).toUpperCase()} — ${asset.title}`,
+          "=".repeat(60),
+          "",
+          asset.content,
+          "",
+        ].join("\n")
+      )
+      .join("\n");
+    const safeName = (source?.title ?? "content")
+      .replace(/[^a-z0-9]+/gi, "-")
+      .toLowerCase()
+      .slice(0, 40);
+    downloadFile(combined, `${safeName}-all-platforms.txt`);
   };
 
   const getPreviewLines = (content: string, platform: Platform) => {
@@ -100,7 +135,7 @@ export default function ResultsPage({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="secondary" size="sm">
+            <Button variant="secondary" size="sm" onClick={handleExportAll}>
               <Download className="w-4 h-4" />
               Export All
             </Button>

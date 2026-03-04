@@ -116,7 +116,8 @@ export default function CreatePage() {
       title,
       selectedType,
       isUrlType ? url : undefined,
-      isFileType ? uploadedFile?.name : undefined
+      isFileType ? uploadedFile?.name : undefined,
+      isTextType ? textContent : undefined
     );
 
     addSource(source);
